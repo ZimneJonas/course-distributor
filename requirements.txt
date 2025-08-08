@@ -1,3 +1,2 @@
-altair
-pandas
-streamlit
+ortools>=9.7.0
+streamlit>=1.37
