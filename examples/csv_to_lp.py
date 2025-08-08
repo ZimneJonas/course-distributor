@@ -51,20 +51,41 @@ def normalize_atom(base: str, *, prefix_if_starts_with_digit: str) -> str:
 def parse_csv_preferences(csv_path: str) -> Tuple[List[str], List[Tuple[str, Dict[str, int]]]]:
     # Returns (courses, list of (student_atom, {course_atom: rank}))
     with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.reader(f, delimiter=";")
+        # Detect delimiter from the first non-empty line, support ";", "," and tabs
+        first_line = ""
+        while True:
+            pos = f.tell()
+            line = f.readline()
+            if line == "":
+                break
+            if line.strip():
+                first_line = line
+                break
+        delimiter = ";"
+        if "," in first_line and first_line.count(",") > first_line.count(";"):
+            delimiter = ","
+        elif "\t" in first_line and first_line.count("\t") >= max(first_line.count(";"), first_line.count(",")):
+            delimiter = "\t"
+        # Rewind and parse with detected delimiter
+        f.seek(0)
+        reader = csv.reader(f, delimiter=delimiter)
         rows = list(reader)
+
     if not rows:
         raise ValueError("CSV file is empty")
 
     header = rows[0]
-    if len(header) < 2:
+    # First cell is expected empty or a label for students; ensure we have at least one non-empty course column
+    raw_course_names = [name.strip() for name in header[1:]]
+    if not any(raw_course_names):
         raise ValueError("CSV must have at least one course column")
 
-    print(header)
-    # First cell is expected empty or a label for students
-    raw_course_names = header[1:]
-    course_atoms = [normalize_atom(name, prefix_if_starts_with_digit="c_") for name in raw_course_names]
-    print(course_atoms)
+    course_atoms = [
+        normalize_atom(name, prefix_if_starts_with_digit="c_")
+        for name in raw_course_names
+        if name
+    ]
+
     students: List[Tuple[str, Dict[str, int]]] = []
     for row in rows[1:]:
         if not row:
@@ -79,8 +100,8 @@ def parse_csv_preferences(csv_path: str) -> Tuple[List[str], List[Tuple[str, Dic
         student_atom = normalize_atom(raw_name, prefix_if_starts_with_digit="s_")
 
         preferences: Dict[str, int] = {}
-        for idx, raw_value in enumerate(row[1:]):
-            course_atom = course_atoms[idx]
+        # Iterate only over declared course columns
+        for course_atom, raw_value in zip(course_atoms, row[1:]):
             value = (raw_value or "").strip()
             if not value:
                 continue
@@ -101,15 +122,7 @@ def generate_asp_facts(courses: List[str], students: List[Tuple[str, Dict[str, i
     lines.append('#include "model.lp".')
     lines.append("")
 
-    # Emit unique course facts
-    unique_courses = []
-    seen = set()
     for c in courses:
-        if c not in seen and c:
-            seen.add(c)
-            unique_courses.append(c)
-
-    for c in unique_courses:
         lines.append(f"course({c}).")
 
     lines.append("")

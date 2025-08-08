@@ -2,6 +2,8 @@
 courses_per_student(1).
 max_student_per_course(30).
 min_student_per_course(10).
+hard_enforced_preference(false).
+show_stats(true).
 
 % CHECKS
 % enforce preferences are set correctly
@@ -22,10 +24,21 @@ count(N, C):- #count { S : assign(S,C), course(C) } = N, course(C).
 
 
 % -20 penalty for out of preference assignments
-preference(S,C,20) :- assign(S,C), not preference(S,C,_).
+penalty(20) :- assign(S,C), not preference(S,C,_).
+:- assign(S,C), not preference(S,C,_), hard_enforced_preference(true).
 
-#minimize { R : assign(S,C), preference(S,C,R) }.
 
-% #show assign/2.
+penalty(X) :- assign(S,C), preference(S,C,X).
+#minimize { X : penalty(X) }.
+
+% also show penalty for each assignment
+res(S,C,R) :- assign(S,C), preference(S,C,R).
+#show res/3.
+#show count/2.
+
+% Statistics
+quality(rank(R2),amount(N)) :- #count { S : assign(S,C), preference(S,C,R), R2 = R } = N, preference(_,_,R2), show_stats(true).
+
+#show quality/2.
 #show count/2.
 
