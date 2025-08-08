@@ -1,4 +1,6 @@
 /.DS_Store
-# ignore students.csv and students.lp
-
+build/
 examples/students.*
+.venv/
+*egg-info/
+*.pyc
