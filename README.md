@@ -1,3 +1,17 @@
+---
+title: Course Distributor
+emoji: 🚀
+colorFrom: red
+colorTo: red
+sdk: docker
+app_port: 8501
+tags:
+- streamlit
+pinned: false
+short_description: course-distributor
+license: mit
+---
+
 # Project Distributor
 
 Assign students to courses based on preferences using Google OR-Tools CP-SAT.
