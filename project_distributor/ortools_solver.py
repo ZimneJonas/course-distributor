@@ -9,13 +9,19 @@ This solver implements the same constraints and optimization as model.lp:
 """
 
 import argparse
+import io
 import re
 import sys
 import time
 from typing import Dict, List, Tuple, Optional
 from ortools.sat.python import cp_model
 
-from csv_parser import parse_csv_preferences
+# Support both package import and direct script execution
+try:  # When imported as part of the package
+    from .csv_parser import parse_csv_preferences
+except Exception:  # When executed directly as a script
+    from csv_parser import parse_csv_preferences
+import contextlib
 
 
 class CourseAssignmentSolver:
@@ -187,8 +193,8 @@ class CourseAssignmentSolver:
         # Sort by student for consistent output
         assignments.sort()
         
-        # for student, course, rank in assignments:
-        #     print(f"res({student},{course},{rank}).")
+        for student, course, rank in assignments:
+            print(f"{student},{course},({rank} choice).")
         
         # Print course counts
         print("\n=== COURSE COUNTS ===")
@@ -214,6 +220,49 @@ class CourseAssignmentSolver:
         print(f"\nTotal penalty: {total_penalty}")
         if hasattr(self.solver, 'ObjectiveValue'):
             print(f"Objective value: {self.solver.ObjectiveValue()}")
+
+
+def solve_csv_file(
+    csv_path: str,
+    *,
+    time_limit_seconds: int = 30,
+    courses_per_student: Optional[int] = None,
+    max_students_per_course: Optional[int] = None,
+    min_students_per_course: Optional[int] = None,
+    hard_enforced_preference: Optional[bool] = None,
+) -> Tuple[bool, str]:
+    """Convenience API: solve a CSV input and return (success, textual_output).
+
+    This runs the same logic as the CLI but captures the printed output
+    so that callers (e.g. a web UI) can display it.
+    """
+    solver = CourseAssignmentSolver()
+    solver.load_from_csv(csv_path)
+
+    # Apply overrides if provided
+    if courses_per_student is not None:
+        solver.courses_per_student = courses_per_student
+    if max_students_per_course is not None:
+        solver.max_students_per_course = max_students_per_course
+    if min_students_per_course is not None:
+        solver.min_students_per_course = min_students_per_course
+    if hard_enforced_preference is not None:
+        solver.hard_enforced_preference = hard_enforced_preference
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        print(f"Configuration:")
+        print(f"  Courses per student: {solver.courses_per_student}")
+        print(f"  Max students per course: {solver.max_students_per_course}")
+        print(f"  Min students per course: {solver.min_students_per_course}")
+        print(f"  Hard enforce preferences: {solver.hard_enforced_preference}")
+
+        solver.build_model()
+        success = solver.solve(time_limit_seconds)
+        if success:
+            solver.print_solution()
+
+    return success, buffer.getvalue()
 
 
 def main():
