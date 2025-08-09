@@ -3,7 +3,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from ..project_distributor.ortools_solver import solve_csv_file
+from project_distributor.ortools_solver import solve_csv_file
 
 
 st.set_page_config(page_title="Project Distributor", page_icon="📊", layout="centered")
