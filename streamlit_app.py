@@ -13,9 +13,9 @@ st.set_page_config(page_title="Project Distributor", page_icon="📊", layout="c
 # Localization dictionary
 TEXTS = {
     "en": {
-        "title": "Project Distributor (OR-Tools)",
+        "title": "Project Distributor",
         "desc": (
-            "Upload a CSV like `examples/students.csv`. The app will run the OR-Tools solver "
+            "Upload a CSV like `examples/students.csv`. The app will run the solver "
             "on your data in the cloud session and show the textual results."
         ),
         "lang_label": "Language / Sprache",
@@ -37,9 +37,9 @@ TEXTS = {
         "note_example_format": "- See `examples/students.csv` for the expected format.",
     },
     "de": {
-        "title": "Projektverteiler (OR-Tools)",
+        "title": "Projektverteiler",
         "desc": (
-            "Laden Sie eine CSV wie `examples/students.csv` hoch. Die App führt den OR-Tools-"
+            "Laden Sie eine CSV wie `examples/students.csv` hoch. Die App führt den "
             "Solver in dieser Cloud-Session aus und zeigt die textuellen Ergebnisse an."
         ),
         "lang_label": "Language / Sprache",
