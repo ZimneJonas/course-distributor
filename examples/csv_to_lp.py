@@ -119,7 +119,7 @@ def parse_csv_preferences(csv_path: str) -> Tuple[List[str], List[Tuple[str, Dic
 
 def generate_asp_facts(courses: List[str], students: List[Tuple[str, Dict[str, int]]]) -> List[str]:
     lines: List[str] = []
-    lines.append('#include "model.lp".')
+    lines.append('#include "../project_distributor/model.lp".')
     lines.append("")
 
     for c in courses:

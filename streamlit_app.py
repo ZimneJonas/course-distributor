@@ -35,6 +35,10 @@ TEXTS = {
         "notes_title": "Notes:",
         "note_processing_local": "- The CSV is processed locally in this session and not persisted.",
         "note_example_format": "- See `examples/students.csv` for the expected format.",
+        # New example helpers
+        "example_label": "Example file:",
+        "open_example": "Open example (preview)",
+        "download_example": "Download example CSV",
     },
     "de": {
         "title": "Projektverteiler",
@@ -59,6 +63,10 @@ TEXTS = {
         "notes_title": "Hinweise:",
         "note_processing_local": "- Die CSV wird lokal in dieser Session verarbeitet und nicht gespeichert.",
         "note_example_format": "- Siehe `examples/students.csv` für das erwartete Format.",
+        # New example helpers
+        "example_label": "Beispieldatei:",
+        "open_example": "Beispiel öffnen (Vorschau)",
+        "download_example": "Beispiel-CSV herunterladen",
     },
 }
 
@@ -127,3 +135,22 @@ st.markdown(f"""
 {t['note_processing_local']}
 {t['note_example_format']}
 """)
+
+# Inline example: preview + download
+EXAMPLE_CSV_PATH = Path(__file__).resolve().parent / "examples" / "students.csv"
+if EXAMPLE_CSV_PATH.exists():
+    example_bytes = EXAMPLE_CSV_PATH.read_bytes()
+    try:
+        example_text = example_bytes.decode("utf-8")
+    except Exception:
+        example_text = EXAMPLE_CSV_PATH.read_text(errors="replace")
+
+    st.caption(t.get("example_label", "Example:"))
+    with st.popover(t.get("open_example", "Open example (preview)")):
+        st.code(example_text, language="csv")
+        st.download_button(
+            t.get("download_example", "Download example CSV"),
+            data=example_bytes,
+            file_name="students.csv",
+            mime="text/csv",
+        )
