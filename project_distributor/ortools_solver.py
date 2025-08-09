@@ -190,8 +190,8 @@ class CourseAssignmentSolver:
                     assignments.append((student, course, rank))
                     total_penalty += penalty
         
-        # Sort by student for consistent output
-        assignments.sort()
+        # Sort by course, then student for consistent output
+        assignments.sort(key=lambda item: (item[1], item[0]))
         
         for student, course, rank in assignments:
             print(f"{student},{course},({rank} choice).")
