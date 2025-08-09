@@ -33,11 +33,14 @@ def main():
         if b in {"asp", "ortools"}:
             backend = b
 
-        # Hand off to the appropriate solver CLI by rewriting sys.argv
-        sys.argv = args
+        # Hand off to the appropriate solver CLI by rewriting sys.argv.
+        # Argparse expects sys.argv[0] to be the program name, so we must
+        # include a dummy program name before the actual arguments.
         if backend == "asp":
+            sys.argv = ["project_distributor.asp_solver"] + args
             asp_main()
         else:
+            sys.argv = ["project_distributor.ortools_solver"] + args
             ortools_main()
         return
 

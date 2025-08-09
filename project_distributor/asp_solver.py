@@ -47,7 +47,7 @@ def _generate_facts_from_csv(csv_path: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _run_clingo(files: List[Path], time_limit_seconds: int) -> Tuple[bool, str]:
+def _run_clingo(files: List[Path], time_limit_seconds: int) -> Tuple[int, str]:
     ok, msg = _ensure_clingo_available()
     if not ok:
         return False, msg + "\n"
@@ -70,8 +70,10 @@ def _run_clingo(files: List[Path], time_limit_seconds: int) -> Tuple[bool, str]:
         return False, f"Failed to run clingo: {exc}\n"
 
     output = proc.stdout or ""
-    # clingo/clasp convention: 10 = SAT, 20 = UNSAT, 30 = UNKNOWN
-    success = proc.returncode == 10
+    # Determine success robustly from clingo output in addition to return code.
+    # Some clingo builds return 0 on success; clasp convention is 10=SAT, 20=UNSAT, 30=UNKNOWN.
+    text = output.upper()
+    success = "OPTIMUM FOUND" in text
     return success, output
 
 
@@ -213,7 +215,7 @@ def main():
     parser.add_argument(
         "--time-limit",
         type=int,
-        default=30,
+        default=10,
         help="Time limit in seconds (default: 30)",
     )
 

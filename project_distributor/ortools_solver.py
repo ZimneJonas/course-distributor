@@ -300,7 +300,7 @@ def main():
     parser.add_argument(
         "--time-limit",
         type=int,
-        default=30,
+        default=10,
         help="Time limit in seconds (default: 30)"
     )
     parser.add_argument(

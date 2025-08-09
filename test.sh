@@ -1,8 +1,8 @@
 # #!/bin/bash
 python examples/generate_students.py 59
 python examples/csv_to_lp.py
-
-clingo examples/students.lp
+# Use ASP backend via our CLI to get formatted, last result only
+python -m project_distributor solve -b asp examples/students.lp
 
 
 echo "=== Testing OR-Tools solver ==="
