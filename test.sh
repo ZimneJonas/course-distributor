@@ -1,8 +1,8 @@
-#!/bin/bash
+# #!/bin/bash
 python examples/generate_students.py 59
 python examples/csv_to_lp.py
 
-# clingo examples/students.lp
+clingo examples/students.lp
 
 
 echo "=== Testing OR-Tools solver ==="
