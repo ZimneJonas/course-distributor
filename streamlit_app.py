@@ -1,6 +1,8 @@
+import io
 import tempfile
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 from project_distributor.ortools_solver import solve_csv_file as solve_csv_ortools
@@ -45,6 +47,9 @@ TEXTS = {
         "example_label": "Example file:",
         "open_example": "Open example (preview)",
         "download_example": "Download example CSV",
+        # Excel-style preview and download
+        "show_excel": "Preview as table (Excel-style)",
+        "download_example_excel": "Download example Excel (.xlsx)",
     },
     "de": {
         "title": "Projektverteiler",
@@ -74,6 +79,9 @@ TEXTS = {
         "example_label": "Beispieldatei:",
         "open_example": "Beispiel öffnen (Vorschau)",
         "download_example": "Beispiel-CSV herunterladen",
+        # Excel-style preview and download
+        "show_excel": "Als Tabelle anzeigen (Excel-Ansicht)",
+        "download_example_excel": "Beispiel als Excel herunterladen",
     },
 }
 
@@ -171,8 +179,7 @@ if example_text is None and example_bytes is not None:
 if example_text:
     st.caption(t.get("example_label", "Example:"))
     with st.popover(t.get("open_example", "Open example (preview)")):
-        st.code(example_text, language="csv")
-        # Controls row: download (left), spacer, sample size with inline refresh (right)
+                # Controls row: download (left), spacer, sample size with inline refresh (right)
         col_dl, _spacer, col_controls = st.columns([2, 1, 2])
         with col_dl:
             st.download_button(
@@ -201,10 +208,37 @@ if example_text:
             with btn_col:
                 # refresh examples (in-memory only; do not overwrite file)
                 if st.button("🔄", type="secondary", use_container_width=True):
-                    text = generate_students_csv_content(int(st.session_state.get("example_rows", 100)))
+                    text = generate_students_csv_content(int(st.session_state.get("example_rows", 100))+1)
                     st.session_state["example_csv_text"] = text
                     st.session_state["example_csv_bytes"] = text.encode("utf-8")
                     st.rerun()
-     
-        # refresh streamlit app
-        
+
+        # Optional Excel-style table preview
+        show_table = st.toggle(t.get("show_excel", "Preview as table (Excel-style)"), value=False)
+
+        df = None
+        excel_bytes = None
+        if show_table:
+            try:
+                # Auto-detect delimiter (comma, semicolon, tab, etc.) using Python engine
+                df = pd.read_csv(
+                    io.StringIO(example_text),
+                    sep=None,
+                    engine="python",
+                    on_bad_lines="skip",
+                )
+                st.dataframe(df, use_container_width=True)
+            except Exception:
+                df = None
+                st.code(example_text, language="csv")
+        else:
+            st.code(example_text, language="csv")
+
+        if df is not None:
+            try:
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False)
+                excel_bytes = buffer.getvalue()
+            except Exception:
+                excel_bytes = None
+ 
