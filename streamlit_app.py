@@ -3,7 +3,8 @@ from pathlib import Path
 
 import streamlit as st
 
-from project_distributor.ortools_solver import solve_csv_file
+from project_distributor.ortools_solver import solve_csv_file as solve_csv_ortools
+from project_distributor.asp_solver import solve_csv_file as solve_csv_asp
 
 
 # Basic page configuration (static title to keep set_page_config at the top)
@@ -21,6 +22,7 @@ TEXTS = {
         "lang_label": "Language / Sprache",
         "file_uploader": "CSV with student preferences",
         "expander": "Solver settings",
+        "backend": "Backend",
         "time_limit": "Time limit (seconds)",
         "courses_per_student": "Courses per student",
         "min_students": "Min students per course",
@@ -49,6 +51,7 @@ TEXTS = {
         "lang_label": "Language / Sprache",
         "file_uploader": "CSV mit Studierendenpräferenzen",
         "expander": "Solver-Einstellungen",
+        "backend": "Backend",
         "time_limit": "Zeitlimit (Sekunden)",
         "courses_per_student": "Kurse pro Studierendem",
         "min_students": "Min. Studierende pro Kurs",
@@ -102,6 +105,7 @@ with st.expander(t["expander"]):
     min_students_per_course = st.number_input(t["min_students"], min_value=0, value=10)
     max_students_per_course = st.number_input(t["max_students"], min_value=1, value=30)
     hard_pref = st.checkbox(t["hard_pref"], value=False)
+    backend = st.selectbox(t["backend"], ["OR-Tools", "ASP (clingo)"])
 
 
 if st.button(t["run_solver"], type="primary"):
@@ -114,14 +118,21 @@ if st.button(t["run_solver"], type="primary"):
         tmp_csv.write_bytes(uploaded.getvalue())
 
         with st.spinner(t["solving"]):
-            success, output = solve_csv_file(
-                str(tmp_csv),
-                time_limit_seconds=int(time_limit),
-                courses_per_student=int(courses_per_student),
-                max_students_per_course=int(max_students_per_course),
-                min_students_per_course=int(min_students_per_course),
-                hard_enforced_preference=bool(hard_pref),
-            )
+            if backend.startswith("OR-Tools"):
+                success, output = solve_csv_ortools(
+                    str(tmp_csv),
+                    time_limit_seconds=int(time_limit),
+                    courses_per_student=int(courses_per_student),
+                    max_students_per_course=int(max_students_per_course),
+                    min_students_per_course=int(min_students_per_course),
+                    hard_enforced_preference=bool(hard_pref),
+                )
+            else:
+                # ASP backend currently ignores overrides; uses defaults in model.lp
+                success, output = solve_csv_asp(
+                    str(tmp_csv),
+                    time_limit_seconds=int(time_limit),
+                )
 
         st.subheader(t["solver_output"])
         st.code(output or t["no_output"], language="text")
