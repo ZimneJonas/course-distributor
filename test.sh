@@ -1,5 +1,5 @@
 #!/bin/bash
-python examples/generate_students.py 100
+python examples/generate_students.py 200
 python examples/csv_to_lp.py
 
 clingo examples/students.lp

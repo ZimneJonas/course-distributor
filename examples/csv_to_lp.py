@@ -122,16 +122,6 @@ def generate_asp_facts(courses: List[str], students: List[Tuple[str, Dict[str, i
     lines.append('#include "../project_distributor/model.lp".')
     lines.append("")
 
-    for c in courses:
-        lines.append(f"course({c}).")
-
-    lines.append("")
-
-    # Emit student and preference facts
-    for student_atom, prefs in students:
-        lines.append(f"student({student_atom}).")
-    lines.append("")
-
     for student_atom, prefs in students:
         for course_atom, rank in prefs.items():
             lines.append(f"preference({student_atom}, {course_atom}, {rank}).")
