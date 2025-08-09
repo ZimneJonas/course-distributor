@@ -1,10 +1,8 @@
-import tempfile
-from pathlib import Path
-
+import io
+import pandas as pd
 import streamlit as st
 
 from project_distributor.ortools_solver import solve_csv_file
-
 
 st.set_page_config(page_title="Project Distributor", page_icon="📊", layout="centered")
 st.title("Project Distributor (OR-Tools)")
@@ -13,8 +11,7 @@ st.write(
     "on your data in the cloud session and show the textual results."
 )
 
-
-uploaded = st.file_uploader("CSV with student preferences", type=["csv"]) 
+uploaded = st.file_uploader("CSV with student preferences", type=["csv"])
 
 with st.expander("Solver settings"):
     time_limit = st.number_input("Time limit (seconds)", min_value=1, max_value=300, value=30)
@@ -23,32 +20,53 @@ with st.expander("Solver settings"):
     max_students_per_course = st.number_input("Max students per course", min_value=1, value=30)
     hard_pref = st.checkbox("Hard enforce preferences (disallow no-preference assignments)", value=False)
 
-
 if st.button("Run solver", type="primary"):
     if not uploaded:
         st.warning("Please upload a CSV file first.")
         st.stop()
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_csv = Path(tmpdir) / "input.csv"
-        tmp_csv.write_bytes(uploaded.getvalue())
-
+    try:
+        # Option 1: If your solver can accept a pandas DataFrame
+        # Modify your solve_csv_file to accept a DataFrame instead of file path
+        df = pd.read_csv(io.StringIO(uploaded.getvalue().decode('utf-8')))
+        st.success(f"CSV loaded: {len(df)} rows, {len(df.columns)} columns")
+        
         with st.spinner("Solving..."):
-            success, output = solve_csv_file(
-                str(tmp_csv),
-                time_limit_seconds=int(time_limit),
-                courses_per_student=int(courses_per_student),
-                max_students_per_course=int(max_students_per_course),
-                min_students_per_course=int(min_students_per_course),
-                hard_enforced_preference=bool(hard_pref),
-            )
+            # You'll need to modify your solver to accept DataFrame
+            # success, output = solve_csv_dataframe(df, ...)  # Modified function
+            
+            # Option 2: If you must use file path, try this approach:
+            # Create the file in the current directory instead of temp
+            csv_filename = "uploaded_file.csv"
+            with open(csv_filename, 'wb') as f:
+                f.write(uploaded.getvalue())
+            
+            try:
+                success, output = solve_csv_file(
+                    csv_filename,
+                    time_limit_seconds=int(time_limit),
+                    courses_per_student=int(courses_per_student),
+                    max_students_per_course=int(max_students_per_course),
+                    min_students_per_course=int(min_students_per_student),
+                    hard_enforced_preference=bool(hard_pref),
+                )
+            finally:
+                # Clean up
+                try:
+                    import os
+                    os.remove(csv_filename)
+                except:
+                    pass
 
         st.subheader("Solver output")
         st.code(output or "(no output)", language="text")
 
         if not success:
             st.error("No feasible solution or solver failed. See output above.")
-
+            
+    except Exception as e:
+        st.error(f"Error processing file: {e}")
+        st.exception(e)
 
 st.markdown(
     """
