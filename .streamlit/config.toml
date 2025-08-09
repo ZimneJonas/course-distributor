@@ -2,6 +2,7 @@
 disableWatchdogWarning = true
 
 [server]
+maxUploadSize = 200
 headless = true
 port = 7860
 
