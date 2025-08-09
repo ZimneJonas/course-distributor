@@ -1,0 +1,9 @@
+[global]
+disableWatchdogWarning = true
+
+[server]
+headless = true
+port = 7860
+
+[browser]
+gatherUsageStats = false
