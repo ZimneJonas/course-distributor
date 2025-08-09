@@ -7,7 +7,7 @@ student(S) :- preference(S,_,_).
 course(C) :- preference(_,C,_).
 
 % Generate assignments only from valid domain
-assign(S,C) :- preference(S,C,1).
+{ assign(S,C) } :- preference(S,C,1).
 { assign(S,C) } :- preference(S,C,R), preference(S,C2,R + 1), not assign(S,C2).
 
 

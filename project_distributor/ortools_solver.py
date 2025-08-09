@@ -192,15 +192,38 @@ class CourseAssignmentSolver:
         
         # Sort by course, then student for consistent output
         assignments.sort(key=lambda item: (item[1], item[0]))
-        
+
+        # Group by course and print in requested format:
+        # course: student (1st Choice), student (2nd Choice), ...
+        def ordinal(n):
+            if isinstance(n, int):
+                if 10 <= (n % 100) <= 20:
+                    suffix = "th"
+                else:
+                    suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+                return f"{n}{suffix}"
+            return str(n)
+
+        # Build mapping: course -> list of (student, rank)
+        course_to_entries = {}
         for student, course, rank in assignments:
-            print(f"{student},{course},({rank} choice).")
+            course_to_entries.setdefault(course, []).append((student, rank))
+
+        # Print each course once with its assigned students
+        for course in self.courses:
+            if course not in course_to_entries:
+                continue
+            entries = course_to_entries[course]
+            formatted = "".join(
+                f"\n  {student} ({ordinal(rank)} choice)" for student, rank in entries
+            )
+            print(f"{course}: {formatted}\n")
         
         # Print course counts
         print("\n=== COURSE COUNTS ===")
         for course in self.courses:
             count = sum(self.solver.Value(self.assignments[(student, course)]) for student in self.students)
-            print(f"count({count},{course}).")
+            print(f"{count} got assigned to {course}.")
         
         # Print quality statistics
         print("\n=== QUALITY STATISTICS ===")
@@ -211,7 +234,7 @@ class CourseAssignmentSolver:
         
         for rank in sorted(rank_counts.keys()):
             count = rank_counts[rank]
-            print(f"quality(rank({rank}),amount({count})).")
+            print(f"{count} got their {ordinal(rank)} choice.")
         
         if any(rank == "no_pref" for _, _, rank in assignments):
             no_pref_count = sum(1 for _, _, rank in assignments if rank == "no_pref")
