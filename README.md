@@ -43,6 +43,13 @@ streamlit run streamlit_app.py
 
 Then open the provided local URL. Upload a CSV like `examples/students.csv`.
 
+## Deploy
+
+```bash
+docker buildx build --platform linux/amd64 -t zimne/course-distributor:latest .
+docker push zimne/course-distributor:latest
+```
+
 ## CSV Format
 
 The first row lists course names; each subsequent row lists a student name in the first column and preference ranks in following columns. See `examples/students.csv`.
