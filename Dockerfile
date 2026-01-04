@@ -3,15 +3,18 @@ FROM python:3.9-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    build-essential \
     curl \
-    software-properties-common \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+COPY requirements.txt ./requirements.txt
 
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 uninstall -y pyarrow && python3 -c "import streamlit; import pandas; import ortools"
+
+COPY project_distributor ./project_distributor
+COPY streamlit_app.py ./streamlit_app.py
+COPY README.md ./README.md
+COPY examples ./examples
 
 EXPOSE 8501
 

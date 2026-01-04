@@ -124,7 +124,7 @@ def _format_sorted_output(raw_output: str) -> str:
 
     import re
 
-    res_matches = re.findall(r"res\(([^,]+),([^,]+),(\d+)\)", atoms_line)
+    res_matches = re.findall(r"assign\(([^,]+),([^,]+),(\d+)\)", atoms_line)
     count_matches = re.findall(r"count\(([^,]+),(\d+)\)", atoms_line)
     quality_matches = re.findall(r"quality\(rank\((\d+)\),amount\((\d+)\)\)", atoms_line)
 

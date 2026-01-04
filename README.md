@@ -30,6 +30,8 @@ python -m project_distributor solve examples/students.csv
 python -m project_distributor solve -b asp examples/students.csv
 ```
 
+ASP can alternatively can be run directly ```clingo examples/students.lp```
+
 ## Web UI (Streamlit)
 
 Run locally:
