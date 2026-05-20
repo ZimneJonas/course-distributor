@@ -5,13 +5,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from project_distributor.ortools_solver import solve_csv_file as solve_csv_ortools
-from project_distributor.asp_solver import solve_csv_file as solve_csv_asp
 from examples.generate_students import (
     generate_students,
     generate_students_csv_content,
 )
-
+from project_distributor.asp_solver import solve_csv_file as solve_csv_asp
+from project_distributor.ortools_solver import solve_csv_file as solve_csv_ortools
 
 # Basic page configuration (static title to keep set_page_config at the top)
 st.set_page_config(page_title="Project Distributor", page_icon="📊", layout="centered")
@@ -77,7 +76,7 @@ TEXTS = {
         "note_example_format": "- Siehe `examples/students.csv` für das erwartete Format.",
         # New example helpers
         "example_label": "Beispieldatei:",
-        "open_example": "Beispiel öffnen (Vorschau)",
+        "open_example": "Beispiel öffnen",
         "download_example": "Beispiel-CSV herunterladen",
         # Excel-style preview and download
         "show_excel": "Als Tabelle anzeigen (Excel-Ansicht)",
@@ -109,11 +108,13 @@ st.title(t["title"])
 st.write(t["desc"])
 
 
-uploaded = st.file_uploader(t["file_uploader"], type=["csv"]) 
+uploaded = st.file_uploader(t["file_uploader"], type=["csv"])
 
 with st.expander(t["expander"]):
     time_limit = st.number_input(t["time_limit"], min_value=1, max_value=300, value=10)
-    courses_per_student = st.number_input(t["courses_per_student"], min_value=1, value=1)
+    courses_per_student = st.number_input(
+        t["courses_per_student"], min_value=1, value=1
+    )
     min_students_per_course = st.number_input(t["min_students"], min_value=0, value=10)
     max_students_per_course = st.number_input(t["max_students"], min_value=1, value=30)
     hard_pref = st.checkbox(t["hard_pref"], value=False)
@@ -152,11 +153,10 @@ if st.button(t["run_solver"], type="primary"):
         st.code(output or t["no_output"], language="text")
 
 
-
 st.markdown(f"""
-{t['notes_title']}
-{t['note_processing_local']}
-{t['note_example_format']}
+{t["notes_title"]}
+{t["note_processing_local"]}
+{t["note_example_format"]}
 """)
 
 # Inline example: preview + download
@@ -174,12 +174,16 @@ if example_text is None and example_bytes is not None:
     try:
         example_text = example_bytes.decode("utf-8")
     except Exception:
-        example_text = EXAMPLE_CSV_PATH.read_text(errors="replace") if EXAMPLE_CSV_PATH.exists() else ""
+        example_text = (
+            EXAMPLE_CSV_PATH.read_text(errors="replace")
+            if EXAMPLE_CSV_PATH.exists()
+            else ""
+        )
 
 if example_text:
     st.caption(t.get("example_label", "Example:"))
     with st.popover(t.get("open_example", "Open example (preview)")):
-                # Controls row: download (left), spacer, sample size with inline refresh (right)
+        # Controls row: download (left), spacer, sample size with inline refresh (right)
         col_dl, _spacer, col_controls = st.columns([2, 1, 2])
         with col_dl:
             st.download_button(
@@ -208,13 +212,17 @@ if example_text:
             with btn_col:
                 # refresh examples (in-memory only; do not overwrite file)
                 if st.button("🔄", type="secondary", use_container_width=True):
-                    text = generate_students_csv_content(int(st.session_state.get("example_rows", 100))+1)
+                    text = generate_students_csv_content(
+                        int(st.session_state.get("example_rows", 100)) + 1
+                    )
                     st.session_state["example_csv_text"] = text
                     st.session_state["example_csv_bytes"] = text.encode("utf-8")
                     st.rerun()
 
         # Optional Excel-style table preview
-        show_table = st.toggle(t.get("show_excel", "Preview as table (Excel-style)"), value=False)
+        show_table = st.toggle(
+            t.get("show_excel", "Preview as table (Excel-style)"), value=False
+        )
 
         df = None
         excel_bytes = None
@@ -241,4 +249,3 @@ if example_text:
                 excel_bytes = buffer.getvalue()
             except Exception:
                 excel_bytes = None
- 
