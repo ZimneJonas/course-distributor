@@ -31,13 +31,18 @@ Then open the provided local URL. Upload a CSV like `examples/students.csv`.
 
 ## Deploy
 
-Pushes to `main` trigger `.github/workflows/docker.yml`, which builds `linux/amd64` and pushes `zimne/course-distributor:latest` (plus a `sha-<short>` tag) to Docker Hub. Requires repo secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
+Pushes to `main` trigger `.github/workflows/docker.yml`, which builds `linux/amd64` and pushes `ghcr.io/zimnejonas/course-distributor:latest`
+Pull:
+
+```bash
+docker pull ghcr.io/zimnejonas/course-distributor:latest
+```
 
 Manual build:
 
 ```bash
-docker buildx build --platform linux/amd64 -t zimne/course-distributor:latest .
-docker push zimne/course-distributor:latest
+docker buildx build --platform linux/amd64 -t ghcr.io/zimnejonas/course-distributor:latest .
+docker push ghcr.io/zimnejonas/course-distributor:latest
 ```
 
 ## CSV Format
