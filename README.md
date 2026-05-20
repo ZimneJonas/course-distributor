@@ -1,17 +1,3 @@
----
-title: Course Distributor
-emoji: 🚀
-colorFrom: red
-colorTo: red
-sdk: docker
-app_port: 8501
-tags:
-- streamlit
-pinned: false
-short_description: course-distributor
-license: mit
----
-
 # Project Distributor
 
 Assign students to courses based on preferences using either Google OR-Tools CP-SAT or ASP (clingo).
@@ -44,6 +30,10 @@ streamlit run streamlit_app.py
 Then open the provided local URL. Upload a CSV like `examples/students.csv`.
 
 ## Deploy
+
+Pushes to `main` trigger `.github/workflows/docker.yml`, which builds `linux/amd64` and pushes `zimne/course-distributor:latest` (plus a `sha-<short>` tag) to Docker Hub. Requires repo secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
+
+Manual build:
 
 ```bash
 docker buildx build --platform linux/amd64 -t zimne/course-distributor:latest .

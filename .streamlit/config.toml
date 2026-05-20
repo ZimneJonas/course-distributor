@@ -4,7 +4,6 @@ disableWatchdogWarning = true
 [server]
 enableXsrfProtection = false
 headless = true
-port = 7860
 
 [browser]
 gatherUsageStats = false
