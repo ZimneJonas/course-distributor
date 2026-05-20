@@ -67,7 +67,7 @@ success, output = solve_csv_file(
 print(output)
 ```
 
-For ASP backend, you can call:
+Manually, you can use:
 
 ```python
 from project_distributor.asp_solver import solve_csv_file
